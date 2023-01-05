@@ -54,7 +54,7 @@ extension DataManager {
     func loadItems(with searchText: String?, for category: Category) {
         todoList = category
             .items
-            .sorted(byKeyPath: "name", ascending: true)
+            .sorted(byKeyPath: "createdDate", ascending: true)
         if let safeSearchText = searchText {
             todoList = todoList?.filter("name CONTAINS[cd] %@", safeSearchText)
         }
@@ -64,7 +64,7 @@ extension DataManager {
         let newItem = Item()
         newItem.name = name
         newItem.isDone = false
-        
+        newItem.createdDate = Date()
         save {
             category.items.append(newItem)
             realm.add(newItem)
@@ -91,6 +91,7 @@ extension DataManager {
     func addCategory(_ categoryName: String) {
         let newCategory = Category()
         newCategory.name = categoryName
+        newCategory.createdDate = Date()
         save {
             realm.add(newCategory)
         }

@@ -28,6 +28,7 @@ class TodoListViewController: UITableViewController {
     
     
     // MARK: - TableView Datasource methods
+    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: K.itemCellIdentifier, for: indexPath)
         if let task = self.dataManager.getItem(at: indexPath.row) {
@@ -44,6 +45,7 @@ class TodoListViewController: UITableViewController {
     
     
     // MARK: - TableView Delegate Method
+    
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         // delete
 //         self.dataManager.delete(itemAt: indexPath.row)
@@ -61,7 +63,9 @@ class TodoListViewController: UITableViewController {
         
     }
     
+    
     // MARK: - IBAction
+    
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         let alert = UIAlertController(title: "Add new Todoey Item", message: "", preferredStyle: .alert)
         
@@ -86,6 +90,7 @@ class TodoListViewController: UITableViewController {
     
     
     // MARK: - helpers
+    
     func loadItems(searchText: String? = nil) {
         dataManager.loadItems(with: searchText, for: category!)
         self.reloadTable()
@@ -99,6 +104,7 @@ class TodoListViewController: UITableViewController {
 
 
 // MARK: - UISearchBarDelegate
+
 extension TodoListViewController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         print(searchBar.text!)

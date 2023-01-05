@@ -56,6 +56,13 @@ class CategoryViewController: UITableViewController {
         return cell
     }
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        
+//        if let category = dataManager.getCategory(at: indexPath.row), category.createdDateTimestamp == nil {
+//            dataManager.save {
+//                category.createdDate = Date()
+//            }
+//        }
+        
         performSegue(withIdentifier: K.itemsSegueIdentifier, sender: self)
     }
     
