@@ -8,70 +8,75 @@
 
 import Foundation
 import UIKit
-import CoreData
+import RealmSwift
 
 class DataManager {
     
-    var todoList: [Item] = [Item]()
-    var categories: [Category] = [Category]()
+    private var todoList: Results<Item>?
+    private var categories: Results<Category>?
     
-    let appDelegate = UIApplication.shared.delegate as! AppDelegate
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-    
-    func save() {
-        appDelegate.saveContext()
+    var categoriesCount: Int {
+        return categories?.count ?? 1
     }
     
-    func fetch(categoryRequest: NSFetchRequest<Category>? = nil, itemRequest: NSFetchRequest<Item>? = nil) -> [NSManagedObject]? {
+    var todoListCount: Int {
+        return todoList?.count ?? 1
+    }
+    
+    func getCategory(at index: Int) -> Category? {
+        return categories?[index]
+    }
+    
+    func getItem(at index: Int) -> Item? {
+        return todoList?[index]
+    }
+    
+    // RealmSwift
+    let realm = try! Realm()
+    
+    
+    func save(_ callback: () -> Void) {
         do {
-            if categoryRequest != nil {
-                return try context.fetch(categoryRequest!)
-            } else if itemRequest != nil {
-                return try context.fetch(itemRequest!)
-            } else {
-                return [NSManagedObject]()
+            try realm.write {
+                callback()
             }
         } catch {
-            print("Fetch error \(error)")
-            return [NSManagedObject]()
+            let nserror = error as NSError
+            fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
         }
     }
+
 }
 
 
 // MARK: - Item
 extension DataManager {
     func loadItems(with searchText: String?, for category: Category) {
-        
-        let request: NSFetchRequest<Item> = Item.fetchRequest()
-        
-        let basePredicate = "category == %@"
-        
-        if let safeSearchText = searchText, safeSearchText != "" {
-            request.predicate = NSPredicate(format: "\(basePredicate) AND name CONTAINS[cd] %@", category, safeSearchText)
-            request.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
-        } else {
-            request.predicate = NSPredicate(format: basePredicate, category)
-        }
-        
-        do {
-            todoList = try context.fetch(request)
-        } catch {
-            print("Fetch error \(error)")
+        todoList = category
+            .items
+            .sorted(byKeyPath: "name", ascending: true)
+        if let safeSearchText = searchText {
+            todoList = todoList?.filter("name CONTAINS[cd] %@", safeSearchText)
         }
     }
+    
     func addItem(_ name: String, for category: Category) {
-        let newItem = Item(context: context)
+        let newItem = Item()
         newItem.name = name
         newItem.isDone = false
-        newItem.category = category
-        self.todoList.append(newItem)
-        save()
+        
+        save {
+            category.items.append(newItem)
+            realm.add(newItem)
+        }
     }
     func delete(itemAt idx: Int) {
-        let item = todoList[idx]
-        context.delete(item)
-        todoList.remove(at: idx)
+        if let item = getItem(at: idx) {
+            save {
+                realm.delete(item)
+            }
+        }
+        
     }
 }
 
@@ -80,13 +85,14 @@ extension DataManager {
 extension DataManager {
     
     func loadCategories() {
-        categories = fetch(categoryRequest: Category.fetchRequest()) as! [Category]
+        categories = realm.objects(Category.self)
     }
+    
     func addCategory(_ categoryName: String) {
-        let newCategory = Category(context: context)
+        let newCategory = Category()
         newCategory.name = categoryName
-        
-        categories.append(newCategory)
-        save()
+        save {
+            realm.add(newCategory)
+        }
     }
 }

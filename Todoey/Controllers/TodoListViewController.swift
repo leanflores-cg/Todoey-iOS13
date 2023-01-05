@@ -7,49 +7,57 @@
 //
 
 import UIKit
+import RealmSwift
 
 class TodoListViewController: UITableViewController {
 
     
     var dataManager = DataManager()
-    var category: Category?
+    var category: Category? {
+        didSet {
+            if let c = category {
+                loadItems()
+                self.title = c.name
+            }
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        loadItems()
-        self.title = category?.name ?? "Todoey"
     }
     
     
     // MARK: - TableView Datasource methods
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: K.itemCellIdentifier, for: indexPath)
-        let task = self.dataManager.todoList[indexPath.row]
-        cell.textLabel?.text = task.name
-        cell.accessoryType = task.isDone ? .checkmark : UITableViewCell.AccessoryType.none
+        if let task = self.dataManager.getItem(at: indexPath.row) {
+            cell.textLabel?.text = task.name
+            cell.accessoryType = task.isDone ? .checkmark : UITableViewCell.AccessoryType.none
+        }
+
         return cell
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return self.dataManager.todoList.count
+        return self.dataManager.todoListCount
     }
     
     
     // MARK: - TableView Delegate Method
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         // delete
-        // self.dataManager.delete(itemAt: indexPath.row)
+//         self.dataManager.delete(itemAt: indexPath.row)
         
         // update
-        let item = self.dataManager.todoList[indexPath.row]
-        item.isDone = !item.isDone
-        
+        if let item = self.dataManager.getItem(at: indexPath.row) {
+            self.dataManager.save {
+                item.isDone = !item.isDone
+            }
+
+        }
+        self.reloadTable()
         
         tableView.deselectRow(at: indexPath, animated: true)
-        
-        // save
-        self.saveAndReload()
         
     }
     
@@ -80,10 +88,6 @@ class TodoListViewController: UITableViewController {
     // MARK: - helpers
     func loadItems(searchText: String? = nil) {
         dataManager.loadItems(with: searchText, for: category!)
-        self.reloadTable()
-    }
-    func saveAndReload() {
-        self.dataManager.save()
         self.reloadTable()
     }
     func reloadTable() {
