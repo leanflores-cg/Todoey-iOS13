@@ -96,4 +96,12 @@ extension DataManager {
             realm.add(newCategory)
         }
     }
+    func delete(categoryAt idx: Int) {
+        if let category = getCategory(at: idx) {
+            save {
+                realm.delete(category)
+            }
+        }
+        
+    }
 }

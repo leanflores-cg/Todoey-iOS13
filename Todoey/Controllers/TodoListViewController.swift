@@ -9,7 +9,7 @@
 import UIKit
 import RealmSwift
 
-class TodoListViewController: UITableViewController {
+class TodoListViewController: SwipeTableViewController {
 
     
     var dataManager = DataManager()
@@ -24,13 +24,15 @@ class TodoListViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        tableView.rowHeight = 80
     }
     
     
     // MARK: - TableView Datasource methods
-    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: K.itemCellIdentifier, for: indexPath)
+        
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
+        
         if let task = self.dataManager.getItem(at: indexPath.row) {
             cell.textLabel?.text = task.name
             cell.accessoryType = task.isDone ? .checkmark : UITableViewCell.AccessoryType.none
@@ -38,7 +40,6 @@ class TodoListViewController: UITableViewController {
 
         return cell
     }
-    
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return self.dataManager.todoListCount
     }
@@ -47,10 +48,7 @@ class TodoListViewController: UITableViewController {
     // MARK: - TableView Delegate Method
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        // delete
-//         self.dataManager.delete(itemAt: indexPath.row)
-        
-        // update
+
         if let item = self.dataManager.getItem(at: indexPath.row) {
             self.dataManager.save {
                 item.isDone = !item.isDone
@@ -100,10 +98,16 @@ class TodoListViewController: UITableViewController {
             self.tableView.reloadData()
         }
     }
+    
+    
+    // MARK: - SwipeTableViewController
+    override func delete(at index: Int) {
+        self.dataManager.delete(itemAt: index)
+    }
 }
 
-
-// MARK: - UISearchBarDelegate
+    
+    // MARK: - UISearchBarDelegate
 
 extension TodoListViewController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {

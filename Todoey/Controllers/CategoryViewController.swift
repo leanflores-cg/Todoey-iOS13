@@ -8,7 +8,7 @@
 
 import UIKit
 
-class CategoryViewController: UITableViewController {
+class CategoryViewController: SwipeTableViewController {
 
     var dataManager = DataManager()
     
@@ -16,6 +16,8 @@ class CategoryViewController: UITableViewController {
         super.viewDidLoad()
         
         loadCategories()
+        
+        tableView.rowHeight = 80
     }
 
     // MARK: - IBAction
@@ -47,23 +49,18 @@ class CategoryViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return dataManager.categoriesCount
     }
-    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: K.categoryCellIdentifier, for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         let category = dataManager.getCategory(at: indexPath.row)
         cell.textLabel?.text = category?.name ?? "No Categories added yet"
         cell.accessoryType = .disclosureIndicator
         return cell
     }
+
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-//        if let category = dataManager.getCategory(at: indexPath.row), category.createdDateTimestamp == nil {
-//            dataManager.save {
-//                category.createdDate = Date()
-//            }
-//        }
-        
         performSegue(withIdentifier: K.itemsSegueIdentifier, sender: self)
+        
     }
     
     
@@ -82,6 +79,13 @@ class CategoryViewController: UITableViewController {
     // MARK: - helpers
     func loadCategories() {
         dataManager.loadCategories()
-        tableView.reloadData()
+        DispatchQueue.main.async {
+            self.tableView.reloadData()
+        }
+    }
+    
+    // MARK: - SwipeTableViewController
+    override func delete(at index: Int) {
+        self.dataManager.delete(categoryAt: index)
     }
 }

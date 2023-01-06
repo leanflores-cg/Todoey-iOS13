@@ -11,6 +11,8 @@ import Foundation
 struct K {
     static let itemCellIdentifier = "ToDoItemCell"
     static let categoryCellIdentifier = "CategoryCell"
+    
+    static let cellIdentifier = "ReusableCell"
     static let userDefaultsKey = "todoList"
     static let itemsSegueIdentifier = "goToItems"
 }
