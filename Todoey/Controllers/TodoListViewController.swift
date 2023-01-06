@@ -8,23 +8,35 @@
 
 import UIKit
 import RealmSwift
-
+import ChameleonFramework
 class TodoListViewController: SwipeTableViewController {
 
-    
+    @IBOutlet weak var searchBar: UISearchBar!
+    //    NSAttributedString.Key
     var dataManager = DataManager()
     var category: Category? {
         didSet {
             if let c = category {
                 loadItems()
                 self.title = c.name
+                
             }
         }
     }
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        tableView.rowHeight = 80
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        if let colorHex = category?.backgroundColorHex,
+           let bgColor = UIColor(hexString: colorHex) {
+            
+            navigationController?.navigationBar.backgroundColor = bgColor
+            navigationController?.navigationBar.tintColor = ContrastColorOf(bgColor , returnFlat: true)
+            navigationController?.navigationBar.largeTitleTextAttributes =
+                [NSAttributedString.Key.foregroundColor : ContrastColorOf(bgColor , returnFlat: true)]
+            searchBar.barTintColor = bgColor
+            searchBar.searchTextField.textColor = ContrastColorOf(bgColor , returnFlat: true)
+        }
     }
     
     
@@ -36,6 +48,14 @@ class TodoListViewController: SwipeTableViewController {
         if let task = self.dataManager.getItem(at: indexPath.row) {
             cell.textLabel?.text = task.name
             cell.accessoryType = task.isDone ? .checkmark : UITableViewCell.AccessoryType.none
+            
+            let darkenPercentage = CGFloat(indexPath.row) / CGFloat(dataManager.todoListCount)
+            
+            if let bgColor = UIColor(hexString: (category!.backgroundColorHex))?.darken(byPercentage: darkenPercentage) {
+                cell.backgroundColor = bgColor
+                cell.textLabel?.textColor = ContrastColorOf(bgColor , returnFlat: true)
+            }
+
         }
 
         return cell
@@ -101,8 +121,8 @@ class TodoListViewController: SwipeTableViewController {
     
     
     // MARK: - SwipeTableViewController
-    override func delete(at index: Int) {
-        self.dataManager.delete(itemAt: index)
+    override func delete(at indexPath: IndexPath) {
+        self.dataManager.delete(itemAt: indexPath.row)
     }
 }
 

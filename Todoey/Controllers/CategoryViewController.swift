@@ -7,6 +7,9 @@
 //
 
 import UIKit
+import ChameleonFramework
+
+let defaultBgColor = UIColor(hexString: "1D9BF6")
 
 class CategoryViewController: SwipeTableViewController {
 
@@ -14,10 +17,14 @@ class CategoryViewController: SwipeTableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         loadCategories()
-        
-        tableView.rowHeight = 80
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.navigationBar.backgroundColor = defaultBgColor
+        navigationController?.navigationBar.largeTitleTextAttributes =
+            [NSAttributedString.Key.foregroundColor : ContrastColorOf(defaultBgColor! , returnFlat: true)]
     }
 
     // MARK: - IBAction
@@ -51,9 +58,18 @@ class CategoryViewController: SwipeTableViewController {
     }
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = super.tableView(tableView, cellForRowAt: indexPath)
-        let category = dataManager.getCategory(at: indexPath.row)
-        cell.textLabel?.text = category?.name ?? "No Categories added yet"
-        cell.accessoryType = .disclosureIndicator
+        cell.textLabel?.text = "No Categories added yet"
+        if let category = dataManager.getCategory(at: indexPath.row) {
+            cell.textLabel?.text = category.name
+            cell.accessoryType = .disclosureIndicator
+            
+            if let bgColor = UIColor(hexString: (category.backgroundColorHex)) {
+                cell.backgroundColor = bgColor
+                cell.textLabel?.textColor = ContrastColorOf(bgColor , returnFlat: true)
+            }
+            
+        }
+
         return cell
     }
 
@@ -85,7 +101,7 @@ class CategoryViewController: SwipeTableViewController {
     }
     
     // MARK: - SwipeTableViewController
-    override func delete(at index: Int) {
-        self.dataManager.delete(categoryAt: index)
+    override func delete(at indexPath: IndexPath) {
+        self.dataManager.delete(categoryAt: indexPath.row)
     }
 }

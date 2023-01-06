@@ -92,6 +92,7 @@ extension DataManager {
         let newCategory = Category()
         newCategory.name = categoryName
         newCategory.createdDate = Date()
+        newCategory.backgroundColorHex = UIColor.randomFlat().hexValue()
         save {
             realm.add(newCategory)
         }
