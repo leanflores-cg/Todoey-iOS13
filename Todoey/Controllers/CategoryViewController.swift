@@ -45,17 +45,24 @@ class CategoryViewController: UITableViewController {
     
     // MARK: - tableView
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return dataManager.categories.count
+        return dataManager.categoriesCount
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: K.categoryCellIdentifier, for: indexPath)
-        let category = dataManager.categories[indexPath.row]
-        cell.textLabel?.text = category.name
+        let category = dataManager.getCategory(at: indexPath.row)
+        cell.textLabel?.text = category?.name ?? "No Categories added yet"
         cell.accessoryType = .disclosureIndicator
         return cell
     }
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        
+//        if let category = dataManager.getCategory(at: indexPath.row), category.createdDateTimestamp == nil {
+//            dataManager.save {
+//                category.createdDate = Date()
+//            }
+//        }
+        
         performSegue(withIdentifier: K.itemsSegueIdentifier, sender: self)
     }
     
@@ -66,7 +73,7 @@ class CategoryViewController: UITableViewController {
             let destinationVC = segue.destination as! TodoListViewController
             
             if let indexPath = tableView.indexPathForSelectedRow {
-                destinationVC.category = dataManager.categories[indexPath.row]
+                destinationVC.category = dataManager.getCategory(at: indexPath.row)
             }
         }
     }
